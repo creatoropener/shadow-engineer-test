@@ -1,15 +1,20 @@
+import re
+
 with open("calculator.py") as f:
     content = f.read()
 
-old_line = '    return 0 # This should raise a ValueError instead!'
-new_line = '    raise ValueError("Cannot divide by zero")'
+pattern = re.compile(r"^(\s*)return 0.*$", re.MULTILINE)
+match = pattern.search(content)
 
-if old_line not in content:
-    raise SystemExit("Could not find the buggy line - calculator.py may have changed.")
+if not match:
+    print("Current calculator.py content:")
+    print(content)
+    raise SystemExit("Could not find a 'return 0' line to fix.")
 
-fixed = content.replace(old_line, new_line)
+indent = match.group(1)
+fixed = pattern.sub(f'{indent}raise ValueError("Cannot divide by zero")', content, count=1)
 
 with open("calculator.py", "w") as f:
     f.write(fixed)
 
-print("✅ PatchProof successfully applied fix to calculator.py")
+print("✅ PatchProof successfully applied dynamic regex fix to calculator.py")
