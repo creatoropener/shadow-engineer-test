@@ -1,0 +1,35 @@
+name: Prepare Sandbox Image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    env:
+      NEBIUS_API_KEY: ${{ secrets.NEBIUS_API_KEY }}
+      NEBIUS_PROJECT_ID: ${{ secrets.NEBIUS_PROJECT_ID }}
+      CONTREE_BASE_URL: https://api.tokenfactory.nebius.com/sandboxes
+    steps:
+      - name: Install Contree SDK
+        run: pip install contree-sdk==0.3.6
+
+      - name: Import base image and install pytest
+        run: |
+          python3 << 'EOF'
+          import os
+          from contree_sdk import ContreeSync
+          from contree_sdk.auth import IAMAuth
+          from contree_sdk.config import ContreeConfig
+
+          sdk = ContreeSync(ContreeConfig(auth=IAMAuth(
+              token=os.environ["NEBIUS_API_KEY"],
+              project_id=os.environ["NEBIUS_PROJECT_ID"],
+              base_url=os.environ["CONTREE_BASE_URL"],
+          )))
+
+          base = sdk.images.oci("python:3.11-slim")
+          ready = base.run(shell="pip install pytest", tag="patchproof-pytest:v1", disposable=False).wait()
+          print("IMAGE_UUID:", ready.uuid)
+          print("IMAGE_TAG:", ready.tag)
+          EOF
