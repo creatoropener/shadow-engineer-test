@@ -1,0 +1,3 @@
+divide() should raise an error, not return 0
+
+divide(a, 0) currently returns 0 silently. It should raise a ValueError instead, since dividing by zero is not a valid operation.
