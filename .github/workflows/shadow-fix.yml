@@ -12,7 +12,7 @@ jobs:
   verify-and-open-pr:
     if: github.event.label.name == 'shadow-fix'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     permissions:
       contents: write
       pull-requests: write
@@ -22,6 +22,15 @@ jobs:
       NEBIUS_PROJECT_ID: ${{ secrets.NEBIUS_PROJECT_ID }}
       NEBIUS_API_KEY: ${{ secrets.NEBIUS_API_KEY }}
       CONTREE_IMAGE: ${{ secrets.CONTREE_IMAGE }}
+      CONTREE_IMAGE_PYTHON_PYTEST: ${{ secrets.CONTREE_IMAGE_PYTHON_PYTEST }}
+      CONTREE_IMAGE_NODE_PACKAGE: ${{ secrets.CONTREE_IMAGE_NODE_PACKAGE }}
+      CONTREE_IMAGE_STATIC_WEB: ${{ secrets.CONTREE_IMAGE_STATIC_WEB }}
+      CONTREE_IMAGE_WEB_PLAYWRIGHT: ${{ secrets.CONTREE_IMAGE_WEB_PLAYWRIGHT }}
+      CONTREE_IMAGE_JAVA_JUNIT: ${{ secrets.CONTREE_IMAGE_JAVA_JUNIT }}
+      CONTREE_IMAGE_JAVA_MAVEN: ${{ secrets.CONTREE_IMAGE_JAVA_MAVEN }}
+      CONTREE_IMAGE_JAVA_GRADLE: ${{ secrets.CONTREE_IMAGE_JAVA_GRADLE }}
+      CONTREE_IMAGE_GO: ${{ secrets.CONTREE_IMAGE_GO }}
+      CONTREE_IMAGE_RUST: ${{ secrets.CONTREE_IMAGE_RUST }}
       NEBIUS_MODEL: ${{ vars.NEBIUS_MODEL || secrets.NEBIUS_MODEL }}
 
     steps:
@@ -55,12 +64,20 @@ jobs:
         shell: bash
         run: |
           missing=0
-          for name in NEBIUS_PROJECT_ID NEBIUS_API_KEY CONTREE_IMAGE NEBIUS_MODEL; do
+          for name in NEBIUS_PROJECT_ID NEBIUS_API_KEY NEBIUS_MODEL; do
             if [[ -z "${!name}" ]]; then
               echo "::error::Missing $name."
               missing=1
             fi
           done
+          if [[ -z "$CONTREE_IMAGE" && -z "$CONTREE_IMAGE_PYTHON_PYTEST" && \
+                -z "$CONTREE_IMAGE_NODE_PACKAGE" && -z "$CONTREE_IMAGE_STATIC_WEB" && \
+                -z "$CONTREE_IMAGE_WEB_PLAYWRIGHT" && -z "$CONTREE_IMAGE_JAVA_JUNIT" && \
+                -z "$CONTREE_IMAGE_JAVA_MAVEN" && -z "$CONTREE_IMAGE_JAVA_GRADLE" && \
+                -z "$CONTREE_IMAGE_GO" && -z "$CONTREE_IMAGE_RUST" ]]; then
+            echo "::error::Add CONTREE_IMAGE or at least one runtime-specific image secret."
+            missing=1
+          fi
           exit "$missing"
 
       - name: Run PatchProof verification
