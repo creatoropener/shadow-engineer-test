@@ -1,0 +1,97 @@
+{
+  "baseline": {
+    "existing_suite_passed": true,
+    "image": "da814bc0-84ef-4714-8edf-8749fa3c1bf2",
+    "output": ".........                                                                [100%]\n9 passed in 0.04s",
+    "tests_passed": 9
+  },
+  "candidates": [
+    {
+      "candidate": 1,
+      "changed_files": [
+        "calculator.py"
+      ],
+      "changed_lines": 4,
+      "duration_seconds": 8.982,
+      "exit_code": 0,
+      "image": "c9193b36-4662-430c-8f07-96b89a941448",
+      "output": "............                                                             [100%]\n12 passed in 0.04s\n\nPATCHPROOF_TEST_HASH_BEFORE=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79\nPATCHPROOF_TEST_HASH_AFTER=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79",
+      "passed": true,
+      "strategy": "minimal targeted correction",
+      "summary": "raise ValueError on division by zero in divide()",
+      "test_protected": true,
+      "tests_passed": 12
+    },
+    {
+      "candidate": 2,
+      "changed_files": [
+        "calculator.py"
+      ],
+      "changed_lines": 4,
+      "duration_seconds": 6.033,
+      "exit_code": 0,
+      "image": "8312807a-1dd5-4a22-b80e-93f9c5d2e0bb",
+      "output": "............                                                             [100%]\n12 passed in 0.04s\n\nPATCHPROOF_TEST_HASH_BEFORE=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79\nPATCHPROOF_TEST_HASH_AFTER=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79",
+      "passed": true,
+      "strategy": "defensive edge-case correction",
+      "summary": "raise ValueError when dividing by zero instead of returning 0",
+      "test_protected": true,
+      "tests_passed": 12
+    },
+    {
+      "candidate": 3,
+      "changed_files": [
+        "calculator.py"
+      ],
+      "changed_lines": 4,
+      "duration_seconds": 7.252,
+      "exit_code": 0,
+      "image": "3964eb89-0b29-43ad-85d5-25112bcedcd3",
+      "output": "............                                                             [100%]\n12 passed in 0.04s\n\nPATCHPROOF_TEST_HASH_BEFORE=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79\nPATCHPROOF_TEST_HASH_AFTER=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79",
+      "passed": true,
+      "strategy": "maintainable behavior-preserving correction",
+      "summary": "raise ValueError when dividing by zero",
+      "test_protected": true,
+      "tests_passed": 12
+    }
+  ],
+  "clean_replay": {
+    "exit_code": 0,
+    "image": "a09ff9c8-31d4-496b-980c-98606882fadc",
+    "output": "............                                                             [100%]\n12 passed in 0.04s\n\nPATCHPROOF_TEST_HASH_BEFORE=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79\nPATCHPROOF_TEST_HASH_AFTER=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79",
+    "passed": true,
+    "test_protected": true,
+    "tests_passed": 12
+  },
+  "issue": {
+    "number": 2,
+    "title": "divide() should raise an error, not return 0",
+    "url": "https://github.com/creatoropener/shadow-engineer-test/issues/2"
+  },
+  "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+  "regression_test": {
+    "created_before_candidates": true,
+    "failed_before_fix": true,
+    "path": "test_patchproof_issue_2.py",
+    "pre_fix_exit_code": 1,
+    "pre_fix_image": "fee5c384-8167-4ddb-9520-cd5ea8243725",
+    "pre_fix_output": "F.                                                                       [100%]\n=================================== FAILURES ===================================\n__________________________ test_divide_by_zero_raises __________________________\n\n    def test_divide_by_zero_raises():\n>       with pytest.raises(ValueError):\nE       Failed: DID NOT RAISE ValueError\n\ntest_patchproof_issue_2.py:6: Failed\n=========================== short test summary info ============================\nFAILED test_patchproof_issue_2.py::test_divide_by_zero_raises - Failed: DID N...\n1 failed, 1 passed in 0.01s\n\nPATCHPROOF_TEST_HASH_BEFORE=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79\nPATCHPROOF_TEST_HASH_AFTER=29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79",
+    "protected": true,
+    "rationale": "The test checks that dividing by zero raises a ValueError, which is the intended behavior. The current implementation returns 0 silently, so this test will fail and reveal the bug.",
+    "sha256": "29fb5f0efae974f4505f124b4e8a881b341dbaa999c9652e5fdd8df6d569ea79"
+  },
+  "sandbox": {
+    "base_image": "692c0dfd-2e61-4b08-98ef-ed0ad9d73b0f",
+    "provider": "Nebius Token Factory"
+  },
+  "schema_version": "0.3",
+  "verdict": "verified",
+  "winner": {
+    "candidate": 2,
+    "changed_files": [
+      "calculator.py"
+    ],
+    "selection": "fewest changed files, then fewest changed lines, then duration",
+    "summary": "raise ValueError when dividing by zero instead of returning 0"
+  }
+}
