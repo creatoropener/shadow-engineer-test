@@ -1,0 +1,2 @@
+contree-sdk==0.3.6
+openai==1.109.1
