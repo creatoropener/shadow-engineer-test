@@ -1,4 +1,6 @@
+import tempfile
 import unittest
+from pathlib import Path
 
 from proof import (
     PatchProofError,
@@ -6,6 +8,7 @@ from proof import (
     render_report,
     validate_candidate,
 )
+from runtimes import detect_runtime
 
 
 class JsonExtractionTests(unittest.TestCase):
@@ -20,30 +23,74 @@ class JsonExtractionTests(unittest.TestCase):
 
 class CandidateValidationTests(unittest.TestCase):
     def test_accepts_allowed_source_replacement(self):
-        changes, summary = validate_candidate(
-            {
-                "summary": "Fix edge case",
-                "changes": [{"path": "calculator.py", "content": "VALUE = 1\n"}],
-            },
-            {"calculator.py"},
-        )
-        self.assertEqual(summary, "Fix edge case")
-        self.assertEqual(changes[0]["path"], "calculator.py")
-
-    def test_rejects_regression_test_edit(self):
-        with self.assertRaises(PatchProofError):
-            validate_candidate(
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "calculator.py").write_text("VALUE = 0\n", encoding="utf-8")
+            adapter = detect_runtime(root)
+            changes, summary = validate_candidate(
                 {
-                    "summary": "Cheat",
-                    "changes": [
+                    "summary": "Fix edge case",
+                    "edits": [
                         {
-                            "path": "test_patchproof_issue_1.py",
-                            "content": "def test_fake(): assert True\n",
+                            "path": "calculator.py",
+                            "old": "VALUE = 0",
+                            "new": "VALUE = 1",
                         }
                     ],
                 },
                 {"calculator.py"},
+                root,
+                adapter,
             )
+            self.assertEqual(summary, "Fix edge case")
+            self.assertEqual(changes[0]["path"], "calculator.py")
+            self.assertEqual(changes[0]["content"], "VALUE = 1\n")
+
+    def test_accepts_small_edit_in_large_html_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            html = "<html><script>function value() { return 0; }</script></html>"
+            (root / "index.html").write_text(html, encoding="utf-8")
+            adapter = detect_runtime(root)
+            changes, _ = validate_candidate(
+                {
+                    "summary": "Correct web behavior",
+                    "edits": [
+                        {
+                            "path": "index.html",
+                            "old": "return 0;",
+                            "new": "return 1;",
+                        }
+                    ],
+                },
+                {"index.html"},
+                root,
+                adapter,
+            )
+            self.assertIn("return 1;", changes[0]["content"])
+            self.assertNotIn("return 0;", changes[0]["content"])
+
+    def test_rejects_regression_test_edit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "calculator.py").write_text("VALUE = 0\n", encoding="utf-8")
+            adapter = detect_runtime(root)
+            with self.assertRaises(PatchProofError):
+                validate_candidate(
+                    {
+                        "summary": "Cheat",
+                        "edits": [
+                            {
+                                "path": "test_patchproof_issue_1.py",
+                                "old": "assert False",
+                                "new": "assert True",
+                            }
+                        ],
+                    },
+                    {"calculator.py"},
+                    root,
+                    adapter,
+                )
 
 
 class ReportTests(unittest.TestCase):
@@ -75,6 +122,7 @@ class ReportTests(unittest.TestCase):
             }
         )
         self.assertIn("VERIFIED", report)
+        self.assertIn("PatchProof v0.5", report)
         self.assertIn("Candidate sandbox branches evaluated: 3", report)
         self.assertIn("Winner replayed from the clean base image", report)
 
